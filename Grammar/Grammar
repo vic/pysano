@@ -24,7 +24,7 @@ decorators: decorator+
 decorated: decorators (classdef | funcdef | async_funcdef)
 
 async_funcdef: ASYNC funcdef
-funcdef: 'def' NAME parameters ['->' test] ':' suite
+funcdef: pynata_def NAME parameters ['->' test] ':' suite
 
 parameters: '(' [typedargslist] ')'
 typedargslist: (tfpdef ['=' test] (',' tfpdef ['=' test])* [',' [
@@ -51,55 +51,77 @@ testlist_star_expr: (test|star_expr) (',' (test|star_expr))* [',']
 augassign: ('+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^=' |
             '<<=' | '>>=' | '**=' | '//=')
 # For normal assignments, additional restrictions enforced by the interpreter
-del_stmt: 'del' exprlist
-pass_stmt: 'pass'
+del_stmt: pynata_del exprlist
+pass_stmt: pynata_pass
 flow_stmt: break_stmt | continue_stmt | return_stmt | raise_stmt | yield_stmt
-break_stmt: 'break'
-continue_stmt: 'continue'
-return_stmt: 'return' [testlist]
+break_stmt: pynata_break
+continue_stmt: pynata_continue
+return_stmt: pynata_return [testlist]
 yield_stmt: yield_expr
-raise_stmt: 'raise' [test ['from' test]]
+raise_stmt: pynata_raise [test [pynata_from test]]
 import_stmt: import_name | import_from
-import_name: 'import' dotted_as_names
+import_name: pynata_import dotted_as_names
 # note below: the ('.' | '...') is necessary because '...' is tokenized as ELLIPSIS
-import_from: ('from' (('.' | '...')* dotted_name | ('.' | '...')+)
-              'import' ('*' | '(' import_as_names ')' | import_as_names))
-import_as_name: NAME ['as' NAME]
-dotted_as_name: dotted_name ['as' NAME]
+import_from: (pynata_from (('.' | '...')* dotted_name | ('.' | '...')+)
+              pynata_import ('*' | '(' import_as_names ')' | import_as_names))
+import_as_name: NAME [pynata_as NAME]
+dotted_as_name: dotted_name [pynata_as NAME]
 import_as_names: import_as_name (',' import_as_name)* [',']
 dotted_as_names: dotted_as_name (',' dotted_as_name)*
 dotted_name: NAME ('.' NAME)*
-global_stmt: 'global' NAME (',' NAME)*
-nonlocal_stmt: 'nonlocal' NAME (',' NAME)*
-assert_stmt: 'assert' test [',' test]
+global_stmt: pynata_global NAME (',' NAME)*
+nonlocal_stmt: pynata_nonlocal NAME (',' NAME)*
+assert_stmt: pynata_assert test [',' test]
 
 compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt
 async_stmt: ASYNC (funcdef | with_stmt | for_stmt)
-if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
-while_stmt: 'while' test ':' suite ['else' ':' suite]
-for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
-try_stmt: ('try' ':' suite
+if_stmt: pynata_if test ':' suite (
+           'elif'
+           test ':' suite)* [
+           'else'
+           ':' suite]
+while_stmt: pynata_while test ':' suite [
+           pynata_else
+           ':' suite]
+for_stmt: pynata_for exprlist pynata_in testlist ':' suite [
+           'else'
+           ':' suite]
+try_stmt: (
+          pynata_try
+          ':' suite
            ((except_clause ':' suite)+
-            ['else' ':' suite]
-            ['finally' ':' suite] |
-           'finally' ':' suite))
-with_stmt: 'with' with_item (',' with_item)*  ':' suite
-with_item: test ['as' expr]
+            [
+
+            'else'
+            ':' suite]
+            [
+
+            'finally'
+
+            ':' suite] |
+
+           'finally'
+
+           ':' suite))
+
+with_stmt: pynata_with with_item (',' with_item)*  ':' suite
+with_item: test [pynata_as expr]
 # NB compile.c makes sure that the default except clause is last
-except_clause: 'except' [test ['as' NAME]]
+except_clause: pynata_except [test [pynata_as NAME]]
 suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
 
-test: or_test ['if' or_test 'else' test] | lambdef
+test: or_test [pynata_if or_test pynata_else test] | lambdef
 test_nocond: or_test | lambdef_nocond
-lambdef: 'lambda' [varargslist] ':' test
-lambdef_nocond: 'lambda' [varargslist] ':' test_nocond
+lambdef: pynata_lambda [varargslist] ':' test
+lambdef_nocond: pynata_lambda [varargslist] ':' test_nocond
 or_test: and_test ('or' and_test)*
 and_test: not_test ('and' not_test)*
 not_test: 'not' not_test | comparison
 comparison: expr (comp_op expr)*
 # <> isn't actually a valid comparison operator in Python. It's here for the
 # sake of a __future__ import described in PEP 401 (which really works :-)
-comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!='|'in'|'not' 'in'|'is'|'is' 'not'
+comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!=' | \
+    'in' |'not' 'in'| 'is' |'is' 'not'
 star_expr: '*' expr
 expr: xor_expr ('|' xor_expr)*
 xor_expr: and_expr ('^' and_expr)*
@@ -113,7 +135,8 @@ atom_expr: [AWAIT] atom trailer*
 atom: ('(' [yield_expr|testlist_comp] ')' |
        '[' [testlist_comp] ']' |
        '{' [dictorsetmaker] '}' |
-       NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False')
+       NAME | NUMBER | STRING+ | '...' |
+       'None' | 'True' | 'False')
 testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* [','] )
 trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
 subscriptlist: subscript (',' subscript)* [',']
@@ -126,7 +149,7 @@ dictorsetmaker: ( ((test ':' test | '**' expr)
                   ((test | star_expr)
                    (comp_for | (',' (test | star_expr))* [','])) )
 
-classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
+classdef: pynata_class NAME ['(' [arglist] ')'] ':' suite
 
 arglist: argument (',' argument)*  [',']
 
@@ -145,11 +168,40 @@ argument: ( test [comp_for] |
             '*' test )
 
 comp_iter: comp_for | comp_if
-comp_for: 'for' exprlist 'in' or_test [comp_iter]
-comp_if: 'if' test_nocond [comp_iter]
+comp_for: pynata_for exprlist 'in' or_test [comp_iter]
+comp_if: pynata_if test_nocond [comp_iter]
 
 # not used in grammar, but may appear in "node" passed from Parser to Compiler
 encoding_decl: NAME
 
-yield_expr: 'yield' [yield_arg]
-yield_arg: 'from' test | testlist
+yield_expr: pynata_yield [yield_arg]
+yield_arg: pynata_from test | testlist
+
+
+### PYNATA ####
+pynata_def: 'def'
+pynata_pass: 'pass'
+pynata_class: 'class' | 'clase'
+pynata_for: 'for'
+pynata_break: 'break'
+pynata_continue: 'continue'
+pynata_return: 'return'
+pynata_del: 'del'
+pynata_raise: 'raise'
+pynata_global: 'global'
+pynata_nonlocal: 'nonlocal'
+pynata_assert: 'assert'
+pynata_with: 'with'
+pynata_except: 'except'
+pynata_lambda: 'lambda'
+pynata_yield: 'yield'
+pynata_while: 'while'
+pynata_import: 'import'
+pynata_from: 'from'
+pynata_if: 'if'
+pynata_comp_is: 'is'
+pynata_as: 'as'
+pynata_try: 'try'
+pynata_or: 'or'
+pynata_else: 'else'
+pynata_in: 'in'
