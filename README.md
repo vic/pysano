@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/vic/pysano/master/pinata.jpg" width="800" height="600">
+
 Pysano
 =====
 
