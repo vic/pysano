@@ -105,9 +105,8 @@
 #define pynata_import 358
 #define pynata_from 359
 #define pynata_if 360
-#define pynata_comp_is 361
-#define pynata_as 362
-#define pynata_try 363
-#define pynata_or 364
-#define pynata_else 365
-#define pynata_in 366
+#define pynata_as 361
+#define pynata_try 362
+#define pynata_or 363
+#define pynata_else 364
+#define pynata_in 365
