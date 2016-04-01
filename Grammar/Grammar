@@ -76,31 +76,30 @@ assert_stmt: pynata_assert test [',' test]
 compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt
 async_stmt: ASYNC (funcdef | with_stmt | for_stmt)
 if_stmt: pynata_if test ':' suite (
-           'elif'
+           ('elif' | 'sinosi' | 'si' 'no' 'si')
            test ':' suite)* [
-           'else'
+           ('else' | 'sino' | 'si' 'no')
            ':' suite]
 while_stmt: pynata_while test ':' suite [
            pynata_else
            ':' suite]
 for_stmt: pynata_for exprlist pynata_in testlist ':' suite [
-           'else'
+           ('else' | 'sino' | 'si' 'no')
            ':' suite]
 try_stmt: (
           pynata_try
           ':' suite
            ((except_clause ':' suite)+
             [
-
-            'else'
+            ('else' | 'sino' | 'si' 'no')
             ':' suite]
             [
 
-            'finally'
+            ('finally' | 'finalmente')
 
             ':' suite] |
 
-           'finally'
+            ('finally' | 'finalmente')
 
            ':' suite))
 
@@ -121,7 +120,8 @@ comparison: expr (comp_op expr)*
 # <> isn't actually a valid comparison operator in Python. It's here for the
 # sake of a __future__ import described in PEP 401 (which really works :-)
 comp_op: '<'|'>'|'=='|'>='|'<='|'<>'|'!=' | \
-    'in' |'not' 'in'| 'is' |'is' 'not'
+    'in' |'not' 'in'| 'is' |'is' 'not' | \
+    'en' | 'no' 'en' | 'es' | 'no' 'es'
 star_expr: '*' expr
 expr: xor_expr ('|' xor_expr)*
 xor_expr: and_expr ('^' and_expr)*
