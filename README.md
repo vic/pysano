@@ -19,7 +19,7 @@ Translated keywords (Palabras reservadas)
 ======
 
 
-| keywords | paysano  | alternativa |
+| keywords | pysano   | alternativa |
 |----------|----------|-------------|
 | def      | def      |             |
 | pass     | pasa     |             |
